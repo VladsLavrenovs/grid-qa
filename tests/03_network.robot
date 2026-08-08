@@ -36,5 +36,5 @@ Plain HTTP Port Behaviour
 Random High Port Is Not Exposed
     [Documentation]    NEGATIVE: nothing should answer on arbitrary port.
     [Tags]             network    ports    negative
-    Port Should Be Closed  ${HOSTNAME}    8443
+    Port Should Be Closed  ${HOSTNAME}    12345
 
