@@ -226,3 +226,6 @@ results/
 
 # Cheatsheets
 cheatsheets/
+
+#Set-env file
+set-env.ps1
