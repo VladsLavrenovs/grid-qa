@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation       Day 1 smoke suite - proving the toolchain works.
-...                 Tests here use only Builtin and String libraries. test
+...                 Tests here use only Builtin and String libraries.
 Library             String
 
 *** Variables ***
