@@ -1,0 +1,9 @@
+stages:
+  - lint
+
+lint:
+  stage: lint
+  image: python:3.12-slim
+  script:
+    - pip install robotframework
+    - robot --dryrun tests/
