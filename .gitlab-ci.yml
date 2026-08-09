@@ -1,10 +1,26 @@
 stages:
   - lint
+  - test
 
 lint:
   stage: lint
   image: python:3.12-slim
   script:
-    - pip install robotframework
     - pip install -r requirements.txt
+    - ruff check libraries/
+    - ruff format --check libraries/
     - robot --dryrun tests/
+
+robot-tests:
+  stage: test
+  image: python:3.12-slim
+  script:
+    - pip install -r requirements.txt
+    - robot --outputdir results --xunit xunit.xml tests/
+  artifacts:
+    when: always
+    paths:
+      - results/
+    reports:
+      junit: results/xunit.xml
+    expire_in: 30 days
