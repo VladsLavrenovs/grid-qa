@@ -1,6 +1,7 @@
 stages:
   - lint
   - test
+  - publish
 
 lint:
   stage: lint
@@ -16,11 +17,23 @@ robot-tests:
   image: python:3.12-slim
   script:
     - pip install -r requirements.txt
-    - robot --outputdir results --xunit xunit.xml tests/
+    - robot --outputdir results --xunit xunit.xml tests/ || RESULT=$?
+    - rebot --outputdir public --log NONE --report report.html results/output.xml
+    - python scripts/make_index.py
+    - exit ${RESULT:-0}
   artifacts:
     when: always
     paths:
       - results/
+      - public/
     reports:
       junit: results/xunit.xml
     expire_in: 30 days
+
+publish:
+  stage: publish
+  image: node:20-slim
+  when: always
+  script:
+    - npx --yes wrangler pages project create grid-qa --production-branch=main || true
+    - npx --yes wrangler pages deploy public --project-name=grid-qa

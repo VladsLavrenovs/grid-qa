@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>grid-qa — nightly test results for Grid</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, sans-serif; background:#0f1420; color:#e6e9f0;
+         max-width: 720px; margin: 4rem auto; padding: 0 1.5rem; line-height:1.6; }
+  h1 { font-size:1.6rem; } h1 span { color:#5ac8fa; }
+  .status { font-size:2.2rem; font-weight:700; margin:1.2rem 0 .2rem; }
+  .pass { color:#4cd964; } .fail { color:#ff5f57; }
+  .meta { color:#8a93a6; font-size:.95rem; }
+  a { color:#5ac8fa; }
+  .card { background:#171e2e; border-radius:12px; padding:1.2rem 1.5rem; margin:1.5rem 0; }
+</style>
+</head>
+<body>
+<h1><span>grid-qa</span> — automated tests for Grid</h1>
+<p>Nightly Robot Framework suite testing the live production app
+   <a href="https://grid.connectedovals.com">grid.connectedovals.com</a>:
+   API &amp; auth behaviour, DNS, TLS certificate health, and port exposure —
+   with custom Python keyword libraries, executed by GitLab CI.</p>
+
+<div class="card">
+  <div class="status pass">13 / 13 tests passed</div>
+  <div class="meta">Last run: 2026-08-09 21:02 UTC &nbsp;·&nbsp; trigger: scheduled/push</div>
+  <p><a href="report.html">Full test report →</a></p>
+</div>
+
+<p class="meta">Source: <a href="https://github.com/VladsLavrenovs/grid-qa">GitHub</a>
+   &nbsp;·&nbsp; Pipeline: <a href="https://gitlab.com/vlads-lavrenovs-group/grid-qa/-/pipelines">GitLab CI</a><br>
+   Built by Vlads Lavrenovs as part of a QA → DevOps portfolio.</p>
+</body>
+</html>
