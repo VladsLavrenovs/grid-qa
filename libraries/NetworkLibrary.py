@@ -8,7 +8,6 @@ AssertionError = test failure.\
 import socket
 import ssl
 from datetime import datetime, timezone
-import os
 
 
 class NetworkLibrary:
