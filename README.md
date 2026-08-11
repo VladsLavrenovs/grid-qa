@@ -14,7 +14,7 @@ keyword libraries, executed nightly by GitLab CI, results published to
 - Toolchain smoke tests
 
 ## How it works
-![Diagram](image.png)
+![Diagram](/assets/Readme-diagram.png)
 
 lint (ruff + RF dryrun) → test (live suite, artifacts) → publish
 (rebot-sanitized report + generated summary page → Cloudflare Pages)
