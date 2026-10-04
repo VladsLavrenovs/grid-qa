@@ -389,6 +389,13 @@ Variables: `${HOSTNAME}=grid.connectedovals.com`, `${MIN_CERT_DAYS}=14`.
   ```
   The first two fail with `Certificate verification FAILED` (expired, hostname mismatch). The third fails the threshold check (`expires in N days minimum requires: 400`). This shows the test can actually go red, which is the point of a negative-path demo.
 
+  > **Rehearse this at home.** In the TLS-intercepting cloud sandbox, the
+  > threshold variant failed as expected. Both badssl variants **passed**,
+  > because the proxy re-signed them with fresh trusted certificates and hid
+  > the expired/mismatched ones. On a normal home connection they fail. On a
+  > corporate network with TLS inspection they may not, so use the
+  > `MIN_CERT_DAYS:400` variant there. This makes a good story for Q&A.
+
 #### 3.3 HTTPS Port Is Open `[network ports smoke]`
 * **Does:** completes a TCP 3-way handshake (SYN → SYN/ACK → ACK) to port 443 within 5 s.
 * **Manual:**
