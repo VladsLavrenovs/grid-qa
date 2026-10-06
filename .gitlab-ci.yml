@@ -8,8 +8,8 @@ lint:
   image: python:3.12-slim
   script:
     - pip install -r requirements.txt
-    - ruff check libraries/
-    - ruff format --check libraries/
+    - ruff check libraries/ scripts/
+    - ruff format --check libraries/ scripts/
     - robot --dryrun tests/
 
 robot-tests:
@@ -28,12 +28,17 @@ robot-tests:
       - public/
     reports:
       junit: results/xunit.xml
+    access: developer   # results/log.html holds request data - project members only
     expire_in: 30 days
 
 publish:
   stage: publish
   image: node:20-slim
-  when: always
+  needs: [robot-tests]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: always
   script:
     - npx --yes wrangler pages project create grid-qa --production-branch=main || true
     - npx --yes wrangler pages deploy public --project-name=grid-qa
+

@@ -226,3 +226,9 @@ cheatsheets/
 
 #Set-env file
 set-env.ps1
+
+# Home-lab Practice Preparation
+home-network-practice/
+
+# Generated site output (built in CI)
+public/

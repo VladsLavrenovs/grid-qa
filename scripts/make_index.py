@@ -20,14 +20,13 @@ def main() -> None:
     html = (
         html.replace("{{PASSED}}", str(passed))
         .replace("{{TOTAL}}", str(total))
-        .replace("{{STATUS_CLASS}}", "pass" if failed ==  0 else "fail")
+        .replace("{{STATUS_CLASS}}", "pass" if failed == 0 else "fail")
         .replace("{{TIMESTAMP}}", datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))
     )
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(html, encoding="utf-8")
-    print(f"iindex.html written: {passed}/{total} passed")
+    print(f"index.html written: {passed}/{total} passed")
 
 
 if __name__ == "__main__":
     main()
-                 

@@ -26,38 +26,62 @@ Auth Service Is Healthy
     Status Should Be    200    ${response}
 
 Test User Can Log In
-    [Documentation]     POST credentials, recieve an access token. Token is stored
+    [Documentation]     POST credentials, receive an access token. Token and user id are stored
     ...                 for the following tests (suite variable = Tosca buffer).
+    ...                 Logging is muted around the credentials so log.html holds no secrets.
     [Tags]              api    auth
-    ${body}=           Create Dictionary     email=${QA_USER_EMAIL}     password=${QA_USER_PASS}
-    ${response}=        POST On Session       api    /auth/v1/token   
+    [Teardown]          Set Log Level    ${old_level}
+    ${old_level}=       Set Log Level         NONE
+    ${body}=            Create Dictionary     email=${QA_USER_EMAIL}     password=${QA_USER_PASS}
+    ${response}=        POST On Session       api    /auth/v1/token
     ...                 params=grant_type=password
     ...                 json=${body}
+    ...                 expected_status=any
     Status Should Be    200    ${response}
-    Dictionary Should Contain Key    ${response.json()}    access_token
     Set Suite Variable    ${ACCESS_TOKEN}    ${response.json()}[access_token]
+    Set Log Level       ${old_level}
+    Set Suite Variable    ${USER_ID}    ${response.json()}[user][id]
     Log                   Token acquired (length: ${{len($ACCESS_TOKEN)}} chars)
 
-Authenticate User Can Read Own Data
+Authenticated User Can Read Only Own Data
     [Documentation]     Bearer token + anon key -> RLS returns ONLY this user's rows.
-    ...                 Adjust the table name to your schema if needed.
+    ...                 Every returned row must belong to the logged-in user.
+    ...                 Needs at least one habit for the test user, otherwise nothing is proven.
     [Tags]              api    auth
     ${headers}=         Create Dictionary   Authorization=Bearer ${ACCESS_TOKEN}
-    ${response}=        GET On Session       api    /rest/v1/habits   
+    ${response}=        GET On Session       api    /rest/v1/habits
     ...                 headers=${headers}
     ...                 params=select=*
     Status Should Be    200    ${response}
-    Log                 Rows visible to test user: ${{len(${response.json()})}}
+    ${rows}=            Set Variable    ${response.json()}
+    Should Not Be Empty    ${rows}    Test user has no habits - RLS isolation cannot be verified
+    FOR    ${row}    IN    @{rows}
+        Should Be Equal    ${row}[user_id]    ${USER_ID}
+    END
+    Log                 Rows visible to test user: ${{len($rows)}} - all owned by ${USER_ID}
 
-Request Without Token Is Rejected
-    [Documentation]     NEGATIVE test: no Bearer token -> the API must refuse.
-    ...                 expected_status stpops RequestLibrary failing early - we WANT the 401.
+Request Without API Key Is Rejected
+    [Documentation]     NEGATIVE test: no apikey and no Bearer token -> the API gateway must refuse.
+    ...                 expected_status stops RequestsLibrary failing early - we WANT the 401.
     [Tags]              api    negative
     ${response}=        GET On Session       bare    /rest/v1/habits
     ...                 expected_status=401
     ...                 params=select=*
     Log                 Correctly rejected with ${response.status_code}
 
+Anon Key Without Token Sees No Rows
+    [Documentation]     NEGATIVE test: apikey present, no Bearer token -> Postgres role 'anon'.
+    ...                 Either refused (401) or RLS filters everything out (200 + empty list).
+    [Tags]              api    negative
+    ${response}=        GET On Session       api    /rest/v1/habits
+    ...                 params=select=*
+    ...                 expected_status=any
+    Log                 anon -> ${response.status_code} ${response.text}
+    IF    ${response.status_code} == 200
+        Should Be Empty    ${response.json()}    Anonymous request returned rows - RLS leak!
+    ELSE
+        Should Be Equal As Integers    ${response.status_code}    401
+    END
 
 
 *** Keywords ***

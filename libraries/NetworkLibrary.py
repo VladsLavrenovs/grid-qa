@@ -1,8 +1,8 @@
-"""Custom Robot Framework keywords for netowork-level checks.
+"""Custom Robot Framework keywords for network-level checks.
 
 Stdlib only (socket, ssl, datetime) - no extra dependencies.
-Each public method becomes an Robot Framework keyword;
-AssertionError = test failure.\
+Each public method becomes a Robot Framework keyword;
+AssertionError = test failure.
 """
 
 import socket
@@ -13,21 +13,22 @@ from datetime import datetime, timezone
 class NetworkLibrary:
     """Network-layer test keywords: DNS, TLS certificates, TCP ports."""
 
-    ROBBOT_LIBRARY_SCOPE = "GLOBAL"
+    ROBOT_LIBRARY_SCOPE = "GLOBAL"
 
     def dns_should_resolve(self, hostname: str) -> str:
         """Fails unless *hostname* resolves to at least one IP address.
 
         Returns the first resolved IP (assignable in Robot Framework).
         Example:
-        | ${ip}= | DNS Should Resolve | grid.connecteedovals.com |
+        | ${ip}= | DNS Should Resolve | grid.connectedovals.com |
         """
         try:
             infos = socket.getaddrinfo(hostname, None)
         except socket.gaierror as exc:
             raise AssertionError(f"DNS resolution failed for {hostname!r}: {exc}")
         ip = infos[0][4][0]
-        print(f"*INFO* {hostname} resolved to {ip} ({len(infos)} records)")
+        unique_ips = {info[4][0] for info in infos}
+        print(f"*INFO* {hostname} resolved to {ip} ({len(unique_ips)} unique IPs)")
         return ip
 
     def tls_certificate_should_be_valid_for_days(
@@ -51,7 +52,7 @@ class NetworkLibrary:
             raise AssertionError(
                 f"Certificate verification FAILED for {hostname}: {exc}"
             )
-        except (TimeoutError, OSError) as exc:
+        except OSError as exc:
             raise AssertionError(f"Could not connect to {hostname}:{port}: {exc}")
 
         not_after = datetime.strptime(cert["notAfter"], "%b %d %H:%M:%S %Y %Z").replace(
@@ -82,13 +83,13 @@ class NetworkLibrary:
                 (hostname, int(port)), timeout=float(timeout)
             ):
                 print(f"*INFO* {hostname}:{port} is open")
-        except (TimeoutError, ConnectionRefusedError, OSError) as exc:
+        except OSError as exc:
             raise AssertionError(f"Port {port} on {hostname} is NOT reachable: {exc}")
 
     def port_should_be_closed(
         self, hostname: str, port: int, timeout: float = 3.0
     ) -> None:
-        """Fails if a TCP connection to *hostname:*port* SUCCEEDS (negative scenario)
+        """Fails if a TCP connection to *hostname*:*port* SUCCEEDS (negative scenario).
 
         Example:
         | Port Should Be Closed | grid.connectedovals.com | 8080 |
@@ -98,7 +99,7 @@ class NetworkLibrary:
                 (hostname, int(port)), timeout=float(timeout)
             ):
                 pass
-        except (TimeoutError, ConnectionRefusedError, OSError):
+        except OSError:
             print(f"*INFO* {hostname}:{port} is closed/filtered - as expected")
             return
         raise AssertionError(f"Port {port} on {hostname} is unexpectedly OPEN")

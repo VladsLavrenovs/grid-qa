@@ -17,7 +17,7 @@ Grid Hostname Resolves
 
 TLS Certificate Is Healthy
     [Documentation]    Cert must verify (trusted chain, matching hostname)
-    ...                and have at leasy ${MIN_CERT_DAYS} days of validity.
+    ...                and have at least ${MIN_CERT_DAYS} days of validity.
     [Tags]             network    tls    smoke
     ${days}=           TLS Certificate Should Be Valid For Days    ${HOSTNAME}    ${MIN_CERT_DAYS}
     Log                ${days} days of certificate validity remaining
@@ -28,7 +28,7 @@ HTTPS Port Is Open
     Port Should Be Open    ${HOSTNAME}    443
 
 Plain HTTP Port Behaviour
-    [Documentation]    Port 80 open is EXPECTED here (Cloudflare answers and 
+    [Documentation]    Port 80 open is EXPECTED here (Cloudflare answers and
     ...                redirects to HTTPS) - documents edge behaviour.
     [Tags]             network    ports
     Port Should Be Open  ${HOSTNAME}    80
