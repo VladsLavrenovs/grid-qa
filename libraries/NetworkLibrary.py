@@ -52,6 +52,7 @@ class NetworkLibrary:
             raise AssertionError(
                 f"Certificate verification FAILED for {hostname}: {exc}"
             )
+        # TimeoutError is a subclass of OSError
         except OSError as exc:
             raise AssertionError(f"Could not connect to {hostname}:{port}: {exc}")
 
@@ -83,6 +84,7 @@ class NetworkLibrary:
                 (hostname, int(port)), timeout=float(timeout)
             ):
                 print(f"*INFO* {hostname}:{port} is open")
+        # TimeoutError and ConnectionRefusedError are subclasses of OSError
         except OSError as exc:
             raise AssertionError(f"Port {port} on {hostname} is NOT reachable: {exc}")
 
@@ -99,6 +101,7 @@ class NetworkLibrary:
                 (hostname, int(port)), timeout=float(timeout)
             ):
                 pass
+        # TimeoutError and ConnectionRefusedError are subclasses of OSError
         except OSError:
             print(f"*INFO* {hostname}:{port} is closed/filtered - as expected")
             return
