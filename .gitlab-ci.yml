@@ -29,7 +29,7 @@ robot-tests:
     reports:
       junit: results/xunit.xml
     access: developer   # results/log.html holds request data - project members only
-    expire_in: 30 days
+    expire_in: 7 days
 
 publish:
   stage: publish
