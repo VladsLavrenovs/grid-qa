@@ -41,8 +41,8 @@ Test User Can Log In
     ...                 expected_status=any
     Status Should Be    200    ${response}
     Set Suite Variable    ${ACCESS_TOKEN}    ${response.json()}[access_token]
-    Set Log Level       ${old_level}
     Set Suite Variable    ${USER_ID}    ${response.json()}[user][id]
+    Set Log Level       ${old_level}
     Log                   Token acquired (length: ${{len($ACCESS_TOKEN)}} chars)
 
 Authenticated User Can Read Only Own Data
@@ -50,10 +50,7 @@ Authenticated User Can Read Only Own Data
     ...                 Every returned row must belong to the logged-in user.
     ...                 Needs at least one habit for the test user, otherwise nothing is proven.
     [Tags]              api    auth
-    ${headers}=         Create Dictionary   Authorization=Bearer ${ACCESS_TOKEN}
-    ${response}=        GET On Session       api    /rest/v1/habits
-    ...                 headers=${headers}
-    ...                 params=select=*
+    ${response}=        GET As Authenticated User    /rest/v1/habits    select=*
     Status Should Be    200    ${response}
     ${rows}=            Set Variable    ${response.json()}
     Should Not Be Empty    ${rows}    Test user has no habits - RLS isolation cannot be verified
@@ -67,10 +64,8 @@ User Cannot Read Another User's Row
     ...                 RLS filters rows instead of returning an error, so the expected
     ...                 result is 200 with an empty list [] - not 401/403.
     [Tags]              api    auth    negative    security
-    ${headers}=         Create Dictionary   Authorization=Bearer ${ACCESS_TOKEN}
-    ${response}=        GET On Session       api    /rest/v1/habits
-    ...                 headers=${headers}
-    ...                 params=id=eq.${OTHER_USER_ROW_ID}&select=*
+    ${response}=        GET As Authenticated User    /rest/v1/habits
+    ...                 id=eq.${OTHER_USER_ROW_ID}    select=*
     Status Should Be    200    ${response}
     Should Be Empty     ${response.json()}    User A can read user B's row - RLS leak!
 
@@ -105,4 +100,17 @@ Create Sessions
     &{api_headers}=    Create Dictionary    apikey=${SUPABASE_KEY}
     Create Session      api    ${SUPABASE_URL}    headers=${api_headers}      verify=${True}  
     Create Session      bare    ${SUPABASE_URL}    verify=${True}
+
+GET As Authenticated User
+    [Documentation]     GET on the api session with the user's Bearer token.
+    ...                 Logging is muted so the token never reaches log.html;
+    ...                 callers assert on the returned response.
+    [Arguments]         ${path}    &{params}
+    [Teardown]          Set Log Level    ${old_level}
+    ${old_level}=       Set Log Level         NONE
+    ${headers}=         Create Dictionary     Authorization=Bearer ${ACCESS_TOKEN}
+    ${response}=        GET On Session        api    ${path}
+    ...                 headers=${headers}
+    ...                 params=${params}
+    RETURN              ${response}
 
