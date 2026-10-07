@@ -35,8 +35,15 @@ lint (ruff + RF dryrun) → test (live suite, artifacts) → publish
   restricted to project members.
 
 ## Running locally
-[venv, requirements, env vars via a local gitignored script (set-env.ps1 on
-Windows / set-env.sh on Linux; values not included), robot command]
+Tests are read-only against the live app.
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+# Create set-env.sh (gitignored; set-env.ps1 on Windows) exporting SUPABASE_URL,
+# SUPABASE_KEY (publishable key), QA_USER_EMAIL, QA_USER_PASS - values not included
+source set-env.sh
+robot --outputdir results tests/
+```
 
 ## Stack
 Robot Framework · Python 3.12 · RequestsLibrary · ruff · GitLab CI ·
