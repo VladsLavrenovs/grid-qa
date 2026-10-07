@@ -232,3 +232,4 @@ home-network-practice/
 
 # Generated site output (built in CI)
 public/
+set-env.sh
