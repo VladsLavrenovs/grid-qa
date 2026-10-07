@@ -75,7 +75,8 @@ User Cannot Read Another User's Row
     Should Be Empty     ${response.json()}    User A can read user B's row - RLS leak!
 
 Request Without API Key Is Rejected
-    [Documentation]     NEGATIVE test: no apikey and no Bearer token -> the API gateway must refuse.
+    [Documentation]     NEGATIVE test: the 'bare' session sends neither apikey nor Bearer token,
+    ...                 so the Supabase API gateway rejects it with 401 before it reaches the database.
     ...                 expected_status stops RequestsLibrary failing early - we WANT the 401.
     [Tags]              api    negative
     ${response}=        GET On Session       bare    /rest/v1/habits
@@ -83,19 +84,17 @@ Request Without API Key Is Rejected
     ...                 params=select=*
     Log                 Correctly rejected with ${response.status_code}
 
-Anon Key Without Token Sees No Rows
+Anon Key Without User Token Sees No Rows
     [Documentation]     NEGATIVE test: apikey present, no Bearer token -> Postgres role 'anon'.
-    ...                 Either refused (401) or RLS filters everything out (200 + empty list).
-    [Tags]              api    negative
+    ...                 The "own habits" policy applies to role public (which includes anon),
+    ...                 but auth.uid() is NULL for anonymous requests, so no row matches:
+    ...                 RLS returns 200 with an empty list [] rather than an error.
+    [Tags]              api    negative    security
     ${response}=        GET On Session       api    /rest/v1/habits
     ...                 params=select=*
     ...                 expected_status=any
-    Log                 anon -> ${response.status_code} ${response.text}
-    IF    ${response.status_code} == 200
-        Should Be Empty    ${response.json()}    Anonymous request returned rows - RLS leak!
-    ELSE
-        Should Be Equal As Integers    ${response.status_code}    401
-    END
+    Status Should Be    200    ${response}
+    Should Be Empty     ${response.json()}    Anonymous request returned rows - RLS leak!
 
 
 *** Keywords ***
