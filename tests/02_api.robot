@@ -11,6 +11,8 @@ ${SUPABASE_URL}      %{SUPABASE_URL}
 ${SUPABASE_KEY}      %{SUPABASE_KEY}
 ${QA_USER_EMAIL}     %{QA_USER_EMAIL}
 ${QA_USER_PASS}      %{QA_USER_PASS}
+# Non-secret fixture row owned by a second test user (user B)
+${OTHER_USER_ROW_ID}    23afec65-33a2-48a9-8945-23529ef7a36c
 
 *** Test Cases ***
 Grid Website Is Reachable
@@ -59,6 +61,18 @@ Authenticated User Can Read Only Own Data
         Should Be Equal    ${row}[user_id]    ${USER_ID}
     END
     Log                 Rows visible to test user: ${{len($rows)}} - all owned by ${USER_ID}
+
+User Cannot Read Another User's Row
+    [Documentation]     NEGATIVE test: user A asks for a row that belongs to user B, by its id.
+    ...                 RLS filters rows instead of returning an error, so the expected
+    ...                 result is 200 with an empty list [] - not 401/403.
+    [Tags]              api    auth    negative    security
+    ${headers}=         Create Dictionary   Authorization=Bearer ${ACCESS_TOKEN}
+    ${response}=        GET On Session       api    /rest/v1/habits
+    ...                 headers=${headers}
+    ...                 params=id=eq.${OTHER_USER_ROW_ID}&select=*
+    Status Should Be    200    ${response}
+    Should Be Empty     ${response.json()}    User A can read user B's row - RLS leak!
 
 Request Without API Key Is Rejected
     [Documentation]     NEGATIVE test: no apikey and no Bearer token -> the API gateway must refuse.
