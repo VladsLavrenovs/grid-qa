@@ -18,7 +18,7 @@ robot-tests:
   script:
     - pip install -r requirements.txt
     - robot --outputdir results --xunit xunit.xml tests/ || RESULT=$?
-    - rebot --outputdir public --log NONE --report report.html results/output.xml
+    - rebot --nostatusrc --outputdir public --log NONE --report report.html results/output.xml
     - python scripts/make_index.py
     - exit ${RESULT:-0}
   artifacts:
